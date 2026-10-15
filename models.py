@@ -13,7 +13,7 @@ class TelemetrySession(Base):
 class TelemetrySample(Base):
     __tablename__ = "telemetry_samples"
     id: Mapped[int] = mapped_column(primary_key=True)
-    session_id: Mapped[int] = mapped_column(ForeignKey("telemetry_sessions.id"))
+    session_id: Mapped[int] = mapped_column(ForeignKey("telemetry_sessions.id"), index=True)
     t_ms: Mapped[int]
     gas: Mapped[float]
     brake: Mapped[float]
