@@ -14,11 +14,11 @@ Done:
 
 - `GET /health`
 - Tests and CI
+- `POST /sessions`
+- PostgreSQL with SQLAlchemy models and Alembic migrations
 
 Next:
-
-- `POST /sessions`
-- PostgreSQL with SQLAlchemy and Alembic
+- Save and read sessions in Postgres
 - JWT auth
 - Docker Compose
 - Deployment
