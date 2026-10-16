@@ -1,9 +1,4 @@
-from fastapi.testclient import TestClient
-from main import app
-
-client = TestClient(app)
-
-def test_health():
+def test_health(client):
     response = client.get("/health")
     
     assert response.status_code == 200
@@ -22,13 +17,15 @@ SESSION = {
     ],
 }
 
-def test_create_session():
+def test_create_session(client):
     response = client.post("/sessions", json=SESSION)
     
     assert response.status_code == 201
-    assert response.json() == SESSION
+    assert "id" in response.json()
+    assert "samples" not in response.json()
+    assert response.json()["max_rpm"] == SESSION["max_rpm"]
 
-def test_create_session_bad_sample():
+def test_create_session_bad_sample(client):
     bad_sample = SESSION["samples"][0] | {"gas": 1.5}
     data = SESSION | {"samples": [bad_sample]}
     
