@@ -1,6 +1,6 @@
 from database import get_db
 from sqlalchemy.orm import Session
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, HTTPException
 import schemas
 import models
 
@@ -20,4 +20,11 @@ def create_session(session: schemas.TelemetrySession, db: Session = Depends(get_
     db.add(row)
     db.commit()
     db.refresh(row)
+    return row
+
+@app.get("/sessions/{session_id}")
+def read_session(session_id: int, db: Session = Depends(get_db)) -> schemas.TelemetrySessionDetail:
+    row = db.get(models.TelemetrySession, session_id)
+    if row is None:
+        raise HTTPException(status_code=404, detail="Session not found")
     return row

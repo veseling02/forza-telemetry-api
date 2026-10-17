@@ -33,3 +33,28 @@ def test_create_session_bad_sample(client):
     
     assert response.status_code == 422
     assert response.json()["detail"][0]["loc"] == ["body", "samples", 0, "gas"]
+    
+def test_read_session(client):
+    created = client.post("/sessions", json=SESSION).json()
+    session_id = created["id"]
+    
+    response = client.get(f"/sessions/{session_id}")
+    
+    assert response.status_code == 200
+    assert response.json()["samples"] == SESSION["samples"]
+    
+def test_read_missing_session(client):
+    session_id = 999
+    
+    response = client.get(f"/sessions/{session_id}")
+    
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Session not found"}
+    
+def test_read_session_bad_id(client):
+    session_id = "abc"
+    
+    response = client.get(f"/sessions/{session_id}")
+    
+    assert response.status_code == 422
+    assert response.json()["detail"][0]["loc"] == ["path", "session_id"]

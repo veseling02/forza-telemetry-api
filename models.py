@@ -8,7 +8,7 @@ class TelemetrySession(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     max_rpm: Mapped[float]
-    samples: Mapped[list["TelemetrySample"]] = relationship(back_populates='session', cascade="all, delete-orphan")
+    samples: Mapped[list["TelemetrySample"]] = relationship(back_populates='session', cascade="all, delete-orphan", order_by="TelemetrySample.t_ms")
 
 class TelemetrySample(Base):
     __tablename__ = "telemetry_samples"
