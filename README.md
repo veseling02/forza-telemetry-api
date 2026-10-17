@@ -71,7 +71,7 @@ python -m venv .venv
 Activate it with `.venv\Scripts\Activate.ps1` on Windows, or `source .venv/bin/activate` on macOS and Linux. Your prompt should now start with `(.venv)`. Then:
 
 ```bash
-pip install -r requirements.txt
+pip install -r requirements-dev.txt
 ```
 
 **3. Configure.** Copy `.env.example` to `.env` (`cp .env.example .env`, or `copy .env.example .env` on Windows) and replace `CHANGE_ME` with your password from step 1, in both lines. `.env` is ignored by git.
