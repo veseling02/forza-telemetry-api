@@ -19,11 +19,11 @@ Done:
 - `GET /sessions/{id}`: returns a stored session with its samples
 - SQLAlchemy models and Alembic migrations
 - Tests against a real PostgreSQL database, locally and in CI
+- Docker image for the API, and Docker Compose running the API and PostgreSQL together
 
 Next:
 
 - JWT auth
-- Docker Compose
 - Deployment
 
 ## Example
@@ -50,9 +50,24 @@ Response, `201 Created`:
 
 `GET /sessions/1` returns the same session with its samples. Out-of-range values, such as `"gas": 1.5`, are rejected with a `422` that points at the exact sample and field.
 
-## Run locally
+## Run with Docker
 
-Requires Python 3.14 and Docker.
+Requires Docker.
+
+1. Copy `.env.example` to `.env` (`cp .env.example .env`, or `copy .env.example .env` on Windows) and set `POSTGRES_PASSWORD` to a password of your choice. `.env` is ignored by git.
+2. Start everything:
+
+```bash
+docker compose up --build
+```
+
+This builds the API image, starts PostgreSQL, waits until it's ready, applies the database migrations, and starts the API. The API is at http://127.0.0.1:8000, and the interactive docs are at http://127.0.0.1:8000/docs.
+
+Press Ctrl+C once to stop. To run it in the background instead, use `docker compose up --build -d` and stop it with `docker compose down`. The data is kept in a Docker volume between runs; `docker compose down -v` deletes it.
+
+## Development
+
+For working on the code, run the API directly with auto-reload, against a PostgreSQL container. Requires Python 3.14 and Docker.
 
 **1. Start PostgreSQL** in a container. Pick a password; you'll use it again in step 3.
 
@@ -74,7 +89,7 @@ Activate it with `.venv\Scripts\Activate.ps1` on Windows, or `source .venv/bin/a
 pip install -r requirements-dev.txt
 ```
 
-**3. Configure.** Copy `.env.example` to `.env` (`cp .env.example .env`, or `copy .env.example .env` on Windows) and replace `CHANGE_ME` with your password from step 1, in both lines. `.env` is ignored by git.
+**3. Configure.** Copy `.env.example` to `.env` if you haven't already, and replace `CHANGE_ME` in `DATABASE_URL` and `TEST_DATABASE_URL` with your password from step 1.
 
 **4. Create the tables:**
 
@@ -88,11 +103,11 @@ alembic upgrade head
 uvicorn main:app --reload
 ```
 
-The API is at http://127.0.0.1:8000, and the interactive docs are at http://127.0.0.1:8000/docs.
+Both this and the Docker setup use port 8000, so stop one before starting the other.
 
 ## Tests
 
-The tests use a separate database, so they never touch your data. Create it once:
+The tests use a separate database in the development PostgreSQL container, so they never touch your data. Create it once:
 
 ```bash
 docker exec forza-pg psql -U postgres -c "CREATE DATABASE telemetry_test;"
