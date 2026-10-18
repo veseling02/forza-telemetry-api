@@ -24,3 +24,24 @@ def test_create_user_short_pass(client):
     assert response.status_code == 422
     assert response.json()["detail"][0]["loc"] == ["body", "password"]
     
+def test_login(client):
+    client.post("/users", json=USER)
+    response = client.post("/token", data=USER)
+    
+    assert response.status_code == 200
+    assert response.json()["token_type"] == "bearer"
+    assert "access_token" in response.json()
+    
+def test_login_wrong_pass(client):
+    wrong_pass = USER | {"password": "wrong"}
+    client.post("/users", json=USER)
+    response = client.post("/token", data=wrong_pass)
+    
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Incorrect username or password"
+    
+def test_login_unknown_user(client):
+    response = client.post("/token", data=USER)
+    
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Incorrect username or password"

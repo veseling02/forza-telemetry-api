@@ -6,6 +6,7 @@ from pwdlib import PasswordHash
 from config import settings
 
 hasher = PasswordHash.recommended()
+DUMMY_HASH = hasher.hash("dummy-password")
 
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MIN = 30

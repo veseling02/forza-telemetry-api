@@ -1,5 +1,7 @@
+from fastapi.security import OAuth2PasswordRequestForm
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
-from security import hasher
+from security import hasher, create_access_token, DUMMY_HASH
 from database import get_db
 from sqlalchemy.orm import Session
 from fastapi import FastAPI, Depends, HTTPException
@@ -23,6 +25,19 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)) -> sche
         raise HTTPException(status_code=409, detail="Username is already taken!")
     db.refresh(row)
     return row
+
+@app.post("/token")
+def login(form: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)) -> schemas.Token:
+    user = db.scalar(select(models.User).where(models.User.username == form.username))
+    password_hash = user.password_hash if user else DUMMY_HASH
+    password_ok = hasher.verify(form.password, password_hash)
+    if user is None or not password_ok:
+        raise HTTPException(
+            status_code=401,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return schemas.Token(access_token=create_access_token(user.id), token_type="bearer")
 
 @app.post("/sessions", status_code=201)
 def create_session(session: schemas.TelemetrySession, db: Session = Depends(get_db)) -> schemas.TelemetrySessionRead:
