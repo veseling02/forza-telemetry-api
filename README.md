@@ -4,6 +4,8 @@
 
 **Work in progress.**
 
+**Live:** [api.veselingunchev.dev/docs](https://api.veselingunchev.dev/docs), the interactive API docs, served from my own home server.
+
 A FastAPI backend for [Forza Live Telemetry](https://github.com/veseling02/forza-telemetry). The desktop app will send recorded driving sessions here to be stored and served back.
 
 **Stack:** FastAPI, PostgreSQL, SQLAlchemy, Alembic, Pydantic, JWT (PyJWT), Argon2 (pwdlib), pytest, Docker, GitHub Actions.
@@ -15,7 +17,7 @@ It's a separate repo so the desktop app's pygame dependency stays out of the ser
 Done:
 
 - `GET /health`
-- `POST /users`: registration, with passwords stored only as Argon2 hashes
+- `POST /users`: registration, with passwords stored only as Argon2 hashes. It can be switched off with `ALLOW_REGISTRATION=false`.
 - `POST /token`: login, returns a JWT access token
 - `GET /users/me`: the user the token belongs to
 - `POST /sessions`: validates a session and stores it in PostgreSQL, owned by the logged-in user
@@ -23,14 +25,17 @@ Done:
 - SQLAlchemy models and Alembic migrations
 - Tests against a real PostgreSQL database, locally and in CI
 - Docker image for the API, and Docker Compose running the API and PostgreSQL together
+- Deployed on a self-hosted server, public over HTTPS (see [Deployment](#deployment))
 
 Next:
 
-- Deployment to a self-hosted server
+- Uploading recorded sessions from the desktop app
 
 ## Example
 
 The session endpoints need a logged-in user. In the interactive docs at `/docs`, register with `POST /users`, then click **Authorize** to log in once; the docs then send the token with every request.
+
+Registration is switched off on the live server, so to try the whole flow, run it locally with Docker (below).
 
 **1. Register:** `POST /users`
 
@@ -96,6 +101,15 @@ docker compose up --build
 This builds the API image, starts PostgreSQL, waits until it's ready, applies the database migrations, and starts the API. The API is at http://127.0.0.1:8000, and the interactive docs are at http://127.0.0.1:8000/docs.
 
 Press Ctrl+C once to stop. To run it in the background instead, use `docker compose up --build -d` and stop it with `docker compose down`. The data is kept in a Docker volume between runs; `docker compose down -v` deletes it.
+
+## Deployment
+
+The live API runs on an old PC at my home, set up as a server:
+
+- **Ubuntu Server 26.04 LTS**, headless, administered over SSH with key-only login and a `ufw` firewall that allows only SSH.
+- **Docker Compose** with this repo's `compose.yaml`. Both containers restart by themselves after a crash or reboot. The API's port is bound to `127.0.0.1`, so it isn't reachable from the local network.
+- **Cloudflare Tunnel** makes it public. `cloudflared` runs on the server as a system service and connects out to Cloudflare, which serves `api.veselingunchev.dev` over HTTPS and passes requests through the tunnel to the API. No router ports are open, and the home IP address isn't exposed.
+- The server has its own `.env` with its own secrets, and `ALLOW_REGISTRATION=false`.
 
 ## Development
 
