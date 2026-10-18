@@ -1,3 +1,5 @@
+from config import settings
+
 USER = {"username": "tester", "password": "test-password"}
 
 def test_create_user(client):
@@ -63,3 +65,10 @@ def test_read_me_bad_token(client):
     
     assert response.status_code == 401
     assert response.json()["detail"] == "Could not validate credentials"
+
+def test_registration_disabled(client, monkeypatch):
+    monkeypatch.setattr(settings, "allow_registration", False)
+    response = client.post("/users", json=USER)
+    
+    assert response.status_code == 403
+    assert response.json()["detail"] == "Registration is disabled"

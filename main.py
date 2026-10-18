@@ -5,6 +5,7 @@ from security import hasher, create_access_token, DUMMY_HASH, get_current_user
 from database import get_db
 from sqlalchemy.orm import Session
 from fastapi import FastAPI, Depends, HTTPException
+from config import settings
 import schemas
 import models
 
@@ -16,6 +17,8 @@ def health():
 
 @app.post("/users", status_code=201)
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)) -> schemas.UserRead:
+    if not settings.allow_registration:
+        raise HTTPException(status_code=403, detail="Registration is disabled")
     row = models.User(username=user.username, password_hash=hasher.hash(user.password))
     db.add(row)
     try:
