@@ -45,3 +45,21 @@ def test_login_unknown_user(client):
     
     assert response.status_code == 401
     assert response.json()["detail"] == "Incorrect username or password"
+    
+def test_read_me(client, auth_headers):
+    response = client.get("/users/me", headers=auth_headers)
+    
+    assert response.status_code == 200
+    assert response.json()["username"] == "tester"
+    
+def test_read_me_no_token(client):
+    response = client.get("/users/me")
+    
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Not authenticated"
+    
+def test_read_me_bad_token(client):
+    response = client.get("/users/me", headers={"Authorization": "Bearer not-a-real-token"})
+    
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Could not validate credentials"

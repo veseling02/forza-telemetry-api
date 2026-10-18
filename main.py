@@ -1,7 +1,7 @@
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
-from security import hasher, create_access_token, DUMMY_HASH
+from security import hasher, create_access_token, DUMMY_HASH, get_current_user
 from database import get_db
 from sqlalchemy.orm import Session
 from fastapi import FastAPI, Depends, HTTPException
@@ -38,6 +38,10 @@ def login(form: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get
             headers={"WWW-Authenticate": "Bearer"},
         )
     return schemas.Token(access_token=create_access_token(user.id), token_type="bearer")
+
+@app.get("/users/me")
+def read_me(user: models.User = Depends(get_current_user)) -> schemas.UserRead:
+    return user
 
 @app.post("/sessions", status_code=201)
 def create_session(session: schemas.TelemetrySession, db: Session = Depends(get_db)) -> schemas.TelemetrySessionRead:
