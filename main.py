@@ -1,4 +1,5 @@
 from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.responses import RedirectResponse
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from security import hasher, create_access_token, DUMMY_HASH, get_current_user
@@ -10,6 +11,10 @@ import schemas
 import models
 
 app = FastAPI()
+
+@app.get("/", include_in_schema=False)
+def root():
+    return RedirectResponse(url="/docs")
 
 @app.get("/health")
 def health():

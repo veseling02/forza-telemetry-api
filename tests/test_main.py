@@ -76,3 +76,9 @@ def test_read_other_user_sessions(client, auth_headers):
     
     assert response.status_code == 404
     assert response.json() == {"detail": "Session not found"}
+    
+def test_root_redirect(client):
+    response = client.get("/", follow_redirects=False)
+    
+    assert response.status_code == 307
+    assert response.headers["location"] == "/docs"
