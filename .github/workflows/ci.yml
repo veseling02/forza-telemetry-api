@@ -21,6 +21,7 @@ jobs:
         env:
             DATABASE_URL: postgresql+psycopg://postgres:postgres@localhost:5432/telemetry_test
             TEST_DATABASE_URL: postgresql+psycopg://postgres:postgres@localhost:5432/telemetry_test
+            SECRET_KEY: ci-only-dummy-secret-key-not-used-anywhere-real
         steps:
             - uses: actions/checkout@v7
 
