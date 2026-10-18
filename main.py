@@ -44,8 +44,9 @@ def read_me(user: models.User = Depends(get_current_user)) -> schemas.UserRead:
     return user
 
 @app.post("/sessions", status_code=201)
-def create_session(session: schemas.TelemetrySession, db: Session = Depends(get_db)) -> schemas.TelemetrySessionRead:
+def create_session(session: schemas.TelemetrySession, user: models.User = Depends(get_current_user), db: Session = Depends(get_db)) -> schemas.TelemetrySessionRead:
     row = models.TelemetrySession(
+        user_id=user.id,
         started_at=session.started_at,
         max_rpm=session.max_rpm,
         samples=[models.TelemetrySample(**s.model_dump()) for s in session.samples]
@@ -56,8 +57,8 @@ def create_session(session: schemas.TelemetrySession, db: Session = Depends(get_
     return row
 
 @app.get("/sessions/{session_id}")
-def read_session(session_id: int, db: Session = Depends(get_db)) -> schemas.TelemetrySessionDetail:
+def read_session(session_id: int, user: models.User = Depends(get_current_user), db: Session = Depends(get_db)) -> schemas.TelemetrySessionDetail:
     row = db.get(models.TelemetrySession, session_id)
-    if row is None:
+    if row is None or row.user_id != user.id:
         raise HTTPException(status_code=404, detail="Session not found")
     return row
