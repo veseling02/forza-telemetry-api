@@ -1,3 +1,5 @@
+from sqlalchemy.exc import IntegrityError
+from security import hasher
 from database import get_db
 from sqlalchemy.orm import Session
 from fastapi import FastAPI, Depends, HTTPException
@@ -9,6 +11,18 @@ app = FastAPI()
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+@app.post("/users", status_code=201)
+def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)) -> schemas.UserRead:
+    row = models.User(username=user.username, password_hash=hasher.hash(user.password))
+    db.add(row)
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=409, detail="Username is already taken!")
+    db.refresh(row)
+    return row
 
 @app.post("/sessions", status_code=201)
 def create_session(session: schemas.TelemetrySession, db: Session = Depends(get_db)) -> schemas.TelemetrySessionRead:
