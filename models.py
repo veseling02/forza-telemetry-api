@@ -3,6 +3,12 @@ from sqlalchemy import DateTime, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from database import Base
 
+class User(Base):
+    __tablename__ = "users"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    username: Mapped[str] = mapped_column(unique=True)
+    password_hash: Mapped[str]
+
 class TelemetrySession(Base):
     __tablename__ = "telemetry_sessions"
     id: Mapped[int] = mapped_column(primary_key=True)
